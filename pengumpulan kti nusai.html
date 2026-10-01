@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduKTI - Sistem Pengumpulan Karya Tulis Ilmiah</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                        <i class="fa-solid fa-book-bookmark text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">EduKTI</h1>
+                        <p class="text-xs text-slate-500">Portal Pengumpulan Karya Tulis Ilmiah</p>
+                    </div>
+                </div>
+
+                <!-- Role Switcher & Action -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <span id="role-badge" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                        <span id="role-text">Mode Siswa</span>
+                    </span>
+
+                    <button id="btn-switch-role" onclick="handleRoleSwitchToggle()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-medium transition shadow-sm flex items-center gap-2">
+                        <i id="btn-role-icon" class="fa-solid fa-user-shield"></i>
+                        <span id="btn-role-label">Masuk Guru Pembimbing</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+        <!-- Banner / Notification Toast Container (Dynamic) -->
+        <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+        <!-- Template Card Section -->
+        <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+                <div class="space-y-1">
+                    <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 text-indigo-200 rounded-md text-[11px] font-semibold tracking-wide uppercase border border-indigo-400/20">
+                        Template Resmi KTI
+                    </span>
+                    <h2 class="text-base sm:text-lg font-bold text-white">Format Penulisan Baku KTI</h2>
+                    <p class="text-xs sm:text-sm text-indigo-100/80 max-w-2xl">
+                        Gunakan format dokumen resmi yang telah disesuaikan dengan standar penulisan sekolah.
+                    </p>
+                </div>
+                <div>
+                    <a href="https://s.id/formatkti_spetech" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-indigo-950 font-semibold text-xs sm:text-sm rounded-xl hover:bg-indigo-50 transition shadow-md group">
+                        <span>https://s.id/formatkti_spetech</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-indigo-600 group-hover:translate-x-0.5 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SISWA VIEW SECTION -->
+        <section id="section-siswa" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Form Pengumpulan KTI -->
+                <div class="lg:col-span-1 bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i>
+                            Unggah Draft KTI
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Kirimkan tautan Google Drive draft KTI Anda.</p>
+                    </div>
+
+                    <form id="form-kti" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                        <!-- Nama Student -->
+                        <div>
+                            <label for="student-name" class="block text-xs font-semibold text-slate-700 mb-1">
+                                Nama Lengkap <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" id="student-name" required placeholder="Contoh: Ahmad Rizky" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                        </div>
+
+                        <!-- No Absen (1-28) -->
+                        <div>
+                            <label for="student-absen" class="block text-xs font-semibold text-slate-700 mb-1">
+                                No. Absen <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="student-absen" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                                <option value="" disabled selected>-- Pilih Nomor Absen (1 - 28) --</option>
+                            </select>
+                        </div>
+
+                        <!-- Link Google Drive KTI -->
+                        <div>
+                            <label for="drive-link" class="block text-xs font-semibold text-slate-700 mb-1">
+                                Link Drive KTI <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">
+                                    <i class="fa-brands fa-google-drive"></i>
+                                </div>
+                                <input type="url" id="drive-link" required placeholder="https://drive.google.com/file/d/..." class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            </div>
+                            <p class="text-[11px] text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-2 flex items-start gap-1.5 leading-snug">
+                                <i class="fa-solid fa-circle-info text-amber-500 mt-0.5 shrink-0"></i>
+                                <span>Pastikan izin akses Google Drive diset menjadi <strong>"Siapa saja yang memiliki link"</strong> (Anyone with link).</span>
+                            </p>
+                        </div>
+
+                        <!-- Pesan / Catatan Tambahan -->
+                        <div>
+                            <label for="student-message" class="block text-xs font-semibold text-slate-700 mb-1">
+                                Pesan / Catatan Tambahan
+                            </label>
+                            <textarea id="student-message" rows="3" placeholder="Tuliskan catatan singkat terkait draft KTI ini..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition shadow-md shadow-indigo-200 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kirim Berkas KTI</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tabel Daftar Pengumpulan Siswa -->
+                <div class="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-indigo-600"></i>
+                                    Daftar Pengumpulan KTI
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Riwayat pengiriman berkas yang telah tercatat di sistem.</p>
+                            </div>
+                            <span id="student-total-count" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold self-start sm:self-auto">
+                                0 Berkas
+                            </span>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
+                                        <th class="py-3 px-3 w-16">Absen</th>
+                                        <th class="py-3 px-4">Penulis</th>
+                                        <th class="py-3 px-4">Draft KTI</th>
+                                        <th class="py-3 px-4">Status</th>
+                                        <th class="py-3 px-4">Feedback Guru</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-table-body" class="divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GURU VIEW SECTION -->
+        <section id="section-guru" class="space-y-6 hidden">
+            <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-slate-900 text-base sm:text-lg">Panel Guru Pembimbing</h3>
+                            <span class="px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] font-bold rounded-md">
+                                Aldhiah Putri U.S.,S.Pd.,Gr.
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">Tinjau, berikan catatan koreksi, dan verifikasi berkas KTI siswa.</p>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="teacher-search" oninput="renderTeacherTable()" placeholder="Cari nama / no. absen..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                </div>
+
+                <!-- Teacher Table -->
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
+                                <th class="py-3 px-3 w-16">Absen</th>
+                                <th class="py-3 px-4">Siswa / Penulis</th>
+                                <th class="py-3 px-4">Tautan Dokumen</th>
+                                <th class="py-3 px-4">Tanggal Kirim</th>
+                                <th class="py-3 px-4">Status Verifikasi</th>
+                                <th class="py-3 px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-table-body" class="divide-y divide-slate-100">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: Password Guru -->
+    <div id="password-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-indigo-600"></i> Autentikasi Guru Pembimbing
+                </h3>
+                <button onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-600">
+                Silakan masukkan kata sandi akses khusus Guru Pembimbing untuk membuka panel peninjauan.
+            </p>
+
+            <div>
+                <input type="password" id="guru-password" placeholder="Masukkan kata sandi..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" onclick="closePasswordModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+                    Batal
+                </button>
+                <button type="button" onclick="verifyGuruPassword()" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition shadow-md shadow-indigo-200">
+                    Masuk Mode Guru
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Review Guru -->
+    <div id="review-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-100 text-xs">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Tinjau & Verifikasi KTI
+                    </h3>
+                    <p id="review-modal-subtitle" class="text-xs text-slate-500"></p>
+                </div>
+                <button onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Detail Siswa & Pesan -->
+            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold text-slate-700">Link Drive KTI:</span>
+                    <a id="review-modal-drive-btn" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold inline-flex items-center gap-1">
+                        <span>Buka File Drive</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                </div>
+                <div class="pt-1 border-t border-slate-200/60">
+                    <span class="font-semibold text-slate-700 block mb-0.5">Pesan Siswa:</span>
+                    <p id="review-modal-message" class="text-slate-600 italic bg-white p-2 rounded border border-slate-200 text-[11px]"></p>
+                </div>
+            </div>
+
+            <!-- Form Peninjauan Guru -->
+            <div class="space-y-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Keputusan Status Dokumen</label>
+                    <select id="review-status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Perlu Revisi">Perlu Revisi</option>
+                        <option value="Disetujui">Disetujui (ACC)</option>
+                        <option value="Ditolak">Ditolak</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Catatan Feedback / Bimbingan Guru</label>
+                    <textarea id="review-feedback" rows="3" placeholder="Tuliskan masukan atau poin revisi untuk siswa..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeReviewModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition">
+                    Batal
+                </button>
+                <button type="button" onclick="saveReviewData()" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition shadow-md shadow-indigo-200">
+                    Simpan Verifikasi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Konfirmasi Hapus KTI (Guru) -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-100 text-xs">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-rose-600 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Hapus Berkas KTI
+                </h3>
+                <button onclick="closeDeleteModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p id="delete-modal-text" class="text-slate-600 leading-relaxed">
+                Apakah Anda yakin ingin menghapus berkas KTI ini? Data yang telah dihapus tidak dapat dikembalikan.
+            </p>
+
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeDeleteModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition">
+                    Batal
+                </button>
+                <button type="button" onclick="confirmDeleteKti()" class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold transition shadow-sm">
+                    Hapus Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase + Firestore -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            doc,
+            onSnapshot,
+            query,
+            orderBy,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        /*
+         * ============================================================
+         * 1. MASUKKAN FIREBASE CONFIG KAMU DI SINI
+         * ============================================================
+         * Firebase Console -> Project settings -> Your apps -> Web app
+         */
+        const firebaseConfig = {
+            apiKey: "GANTI_DENGAN_API_KEY",
+            authDomain: "GANTI_DENGAN_PROJECT_ID.firebaseapp.com",
+            projectId: "GANTI_DENGAN_PROJECT_ID",
+            storageBucket: "GANTI_DENGAN_STORAGE_BUCKET",
+            messagingSenderId: "GANTI_DENGAN_MESSAGING_SENDER_ID",
+            appId: "GANTI_DENGAN_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const ktiCollection = collection(db, "ktiData");
+
+        // Data state
+        let currentRole = 'SISWA';
+        let currentReviewId = null;
+        let currentDeleteId = null;
+        let ktiData = [];
+
+        // Flag untuk mengetahui Firebase sudah terhubung
+        let firebaseReady = false;
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        function initAbsenOptions() {
+            const selectElem = document.getElementById('student-absen');
+            if (!selectElem) return;
+
+            selectElem.innerHTML =
+                '<option value="" disabled selected>-- Pilih Nomor Absen (1 - 28) --</option>';
+
+            for (let i = 1; i <= 28; i++) {
+                const opt = document.createElement('option');
+                opt.value = i.toString();
+                opt.textContent = `No. Absen ${i}`;
+                selectElem.appendChild(opt);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initAbsenOptions();
+            updateRoleUI();
+            listenToKtiData();
+        });
+
+        // ============================================================
+        // FIRESTORE - REAL TIME LISTENER
+        // ============================================================
+        function listenToKtiData() {
+            try {
+                const q = query(ktiCollection, orderBy("createdAt", "desc"));
+
+                onSnapshot(q, (snapshot) => {
+                    ktiData = snapshot.docs.map(docSnap => ({
+                        id: docSnap.id,
+                        ...docSnap.data()
+                    }));
+
+                    firebaseReady = true;
+
+                    renderStudentTable();
+                    renderTeacherTable();
+                }, (error) => {
+                    console.error("Firestore listener error:", error);
+                    showToast(
+                        'Gagal membaca database. Cek Firebase Config dan Firestore Rules.',
+                        'error'
+                    );
+                });
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                showToast('Firebase belum dikonfigurasi dengan benar.', 'error');
+            }
+        }
+
+        // ============================================================
+        // ROLE SWITCH
+        // ============================================================
+        function handleRoleSwitchToggle() {
+            if (currentRole === 'SISWA') {
+                document.getElementById('password-modal').classList.remove('hidden');
+                document.getElementById('guru-password').focus();
+            } else {
+                currentRole = 'SISWA';
+                updateRoleUI();
+                showToast('Kembali ke Mode Siswa', 'info');
+            }
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+            document.getElementById('guru-password').value = '';
+        }
+
+        function verifyGuruPassword() {
+            const pwd = document.getElementById('guru-password').value;
+
+            if (pwd === 'guru123') {
+                currentRole = 'GURU';
+                closePasswordModal();
+                updateRoleUI();
+                renderTeacherTable();
+                showToast('Berhasil masuk sebagai Guru Pembimbing', 'success');
+            } else {
+                showToast('Kata sandi salah!', 'error');
+            }
+        }
+
+        function updateRoleUI() {
+            const roleBadge = document.getElementById('role-badge');
+            const roleText = document.getElementById('role-text');
+            const btnRoleIcon = document.getElementById('btn-role-icon');
+            const btnRoleLabel = document.getElementById('btn-role-label');
+            const sectionSiswa = document.getElementById('section-siswa');
+            const sectionGuru = document.getElementById('section-guru');
+
+            if (currentRole === 'GURU') {
+                roleBadge.className =
+                    'px-2.5 py-1 bg-purple-100 border border-purple-200 text-purple-700 text-xs font-semibold rounded-full flex items-center gap-1.5';
+                roleText.textContent = 'Mode Guru Pembimbing';
+                btnRoleIcon.className = 'fa-solid fa-arrow-right-from-bracket';
+                btnRoleLabel.textContent = 'Keluar Mode Guru';
+
+                sectionSiswa.classList.add('hidden');
+                sectionGuru.classList.remove('hidden');
+            } else {
+                roleBadge.className =
+                    'px-2.5 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold rounded-full flex items-center gap-1.5';
+                roleText.textContent = 'Mode Siswa';
+                btnRoleIcon.className = 'fa-solid fa-user-shield';
+                btnRoleLabel.textContent = 'Masuk Guru Pembimbing';
+
+                sectionSiswa.classList.remove('hidden');
+                sectionGuru.classList.add('hidden');
+            }
+        }
+
+        // ============================================================
+        // URL
+        // ============================================================
+        function sanitizeUrl(url) {
+            let clean = url.trim();
+
+            if (!/^https?:\/\//i.test(clean)) {
+                clean = 'https://' + clean;
+            }
+
+            return clean;
+        }
+
+        // ============================================================
+        // SUBMIT KTI -> FIRESTORE
+        // ============================================================
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const button = event.submitter;
+            const author = document.getElementById('student-name').value.trim();
+            const absen = document.getElementById('student-absen').value;
+            let driveLink = document.getElementById('drive-link').value.trim();
+            const message = document.getElementById('student-message').value.trim();
+
+            if (!author || !absen || !driveLink) {
+                showToast('Harap isi semua kolom wajib!', 'error');
+                return;
+            }
+
+            if (!firebaseReady) {
+                showToast('Database belum siap. Coba lagi sebentar.', 'error');
+                return;
+            }
+
+            driveLink = sanitizeUrl(driveLink);
+
+            if (button) {
+                button.disabled = true;
+                button.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i><span>Mengirim...</span>';
+            }
+
+            try {
+                await addDoc(ktiCollection, {
+                    author: author,
+                    absen: absen,
+                    driveLink: driveLink,
+                    message: message || '-',
+                    status: 'Belum Ditinjau',
+                    feedback: '',
+                    teacher: 'Aldhiah Putri U.S.,S.Pd.,Gr.',
+                    date: new Date().toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                    }),
+                    createdAt: serverTimestamp()
+                });
+
+                document.getElementById('form-kti').reset();
+
+                showToast('Berkas KTI berhasil dikirim!', 'success');
+            } catch (error) {
+                console.error("Gagal mengirim KTI:", error);
+                showToast('Gagal mengirim. Periksa koneksi/database.', 'error');
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML =
+                        '<i class="fa-solid fa-paper-plane"></i><span>Kirim Berkas KTI</span>';
+                }
+            }
+        }
+
+        // ============================================================
+        // STUDENT TABLE
+        // ============================================================
+        function renderStudentTable() {
+            const tableBody = document.getElementById('student-table-body');
+            const totalCount = document.getElementById('student-total-count');
+
+            if (!tableBody) return;
+
+            if (totalCount) {
+                totalCount.textContent = `${ktiData.length} Berkas`;
+            }
+
+            if (ktiData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-400">
+                            <i class="fa-regular fa-folder-open text-2xl mb-2 block"></i>
+                            Belum ada berkas KTI yang dikirim.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = ktiData.map(item => {
+                let statusBadge = '';
+
+                if (item.status === 'Disetujui') {
+                    statusBadge = `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-semibold rounded-md text-[11px]"><i class="fa-solid fa-circle-check"></i> Disetujui (ACC)</span>`;
+                } else if (item.status === 'Perlu Revisi') {
+                    statusBadge = `<span class="px-2 py-0.5 bg-amber-100 text-amber-700 font-semibold rounded-md text-[11px]"><i class="fa-solid fa-triangle-exclamation"></i> Perlu Revisi</span>`;
+                } else if (item.status === 'Ditolak') {
+                    statusBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-700 font-semibold rounded-md text-[11px]"><i class="fa-solid fa-circle-xmark"></i> Ditolak</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 font-semibold rounded-md text-[11px]"><i class="fa-regular fa-clock"></i> Belum Ditinjau</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3 px-3 font-semibold text-slate-700 text-center">
+                            ${escapeHtml(item.absen || '-')}
+                        </td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">
+                            ${escapeHtml(item.author)}
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="${escapeHtml(item.driveLink)}" target="_blank"
+                               rel="noopener noreferrer"
+                               class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center gap-1">
+                                <i class="fa-brands fa-google-drive"></i> Buka File
+                            </a>
+                        </td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-slate-600 max-w-xs truncate">
+                            ${escapeHtml(item.feedback || '-')}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        // TEACHER TABLE
+        // ============================================================
+        function renderTeacherTable() {
+            const tableBody = document.getElementById('teacher-table-body');
+            const searchVal =
+                (document.getElementById('teacher-search')?.value || '').toLowerCase();
+
+            if (!tableBody) return;
+
+            const filtered = ktiData.filter(item =>
+                (item.author || '').toLowerCase().includes(searchVal) ||
+                (item.absen && item.absen.toString().includes(searchVal))
+            );
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400">
+                            Tidak ada data pengumpulan KTI yang cocok.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = filtered.map(item => {
+                let statusBadge = '';
+
+                if (item.status === 'Disetujui') {
+                    statusBadge = `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-semibold rounded-md text-[11px]">ACC</span>`;
+                } else if (item.status === 'Perlu Revisi') {
+                    statusBadge = `<span class="px-2 py-0.5 bg-amber-100 text-amber-700 font-semibold rounded-md text-[11px]">Revisi</span>`;
+                } else if (item.status === 'Ditolak') {
+                    statusBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-700 font-semibold rounded-md text-[11px]">Ditolak</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 font-semibold rounded-md text-[11px]">Belum</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3 px-3 font-semibold text-slate-700 text-center">
+                            ${escapeHtml(item.absen || '-')}
+                        </td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">
+                            ${escapeHtml(item.author)}
+                        </td>
+                        <td class="py-3 px-4">
+                            <a href="${escapeHtml(item.driveLink)}" target="_blank"
+                               rel="noopener noreferrer"
+                               class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center gap-1">
+                                <i class="fa-brands fa-google-drive"></i> Drive Link
+                            </a>
+                        </td>
+                        <td class="py-3 px-4 text-slate-500">
+                            ${escapeHtml(item.date || '-')}
+                        </td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="openReviewModal('${item.id}')"
+                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1 shadow-sm">
+                                    <i class="fa-solid fa-pen-to-square"></i> Tinjau
+                                </button>
+
+                                <button onclick="openDeleteModal('${item.id}')"
+                                    class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1 shadow-sm"
+                                    title="Hapus Berkas">
+                                    <i class="fa-solid fa-trash-can"></i> Hapus
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        // REVIEW
+        // ============================================================
+        function openReviewModal(id) {
+            const item = ktiData.find(i => i.id === id);
+            if (!item) return;
+
+            currentReviewId = id;
+
+            document.getElementById('review-modal-subtitle').textContent =
+                `Penulis: ${item.author} (No. Absen: ${item.absen || '-'})`;
+
+            document.getElementById('review-modal-message').textContent =
+                item.message || '-';
+
+            const driveBtn = document.getElementById('review-modal-drive-btn');
+
+            if (driveBtn) {
+                driveBtn.href = item.driveLink;
+            }
+
+            document.getElementById('review-status').value =
+                item.status === 'Belum Ditinjau' ? 'Perlu Revisi' : item.status;
+
+            document.getElementById('review-feedback').value =
+                item.feedback || '';
+
+            document.getElementById('review-modal').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').classList.add('hidden');
+            currentReviewId = null;
+        }
+
+        async function saveReviewData() {
+            if (!currentReviewId) return;
+
+            const item = ktiData.find(i => i.id === currentReviewId);
+            if (!item) return;
+
+            const status = document.getElementById('review-status').value;
+            const feedback =
+                document.getElementById('review-feedback').value.trim();
+
+            try {
+                await updateDoc(doc(db, "ktiData", currentReviewId), {
+                    status: status,
+                    feedback: feedback,
+                    updatedAt: serverTimestamp()
+                });
+
+                closeReviewModal();
+                showToast('Hasil verifikasi berhasil disimpan!', 'success');
+            } catch (error) {
+                console.error("Gagal menyimpan review:", error);
+                showToast('Gagal menyimpan verifikasi.', 'error');
+            }
+        }
+
+        // ============================================================
+        // DELETE
+        // ============================================================
+        function openDeleteModal(id) {
+            const item = ktiData.find(i => i.id === id);
+            if (!item) return;
+
+            currentDeleteId = id;
+
+            const textElem = document.getElementById('delete-modal-text');
+
+            if (textElem) {
+                textElem.innerHTML =
+                    `Apakah Anda yakin ingin menghapus berkas KTI karya <strong>${escapeHtml(item.author)}</strong> (No. Absen: ${escapeHtml(item.absen || '-')})? Data yang dihapus tidak dapat dikembalikan.`;
+            }
+
+            document.getElementById('delete-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+            currentDeleteId = null;
+        }
+
+        async function confirmDeleteKti() {
+            if (!currentDeleteId) return;
+
+            try {
+                await deleteDoc(doc(db, "ktiData", currentDeleteId));
+
+                closeDeleteModal();
+                showToast('Berkas KTI berhasil dihapus!', 'success');
+            } catch (error) {
+                console.error("Gagal menghapus KTI:", error);
+                showToast('Gagal menghapus data.', 'error');
+            }
+        }
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+
+            let bgClass = 'bg-slate-900 text-white';
+            let icon =
+                '<i class="fa-solid fa-circle-info text-indigo-400"></i>';
+
+            if (type === 'success') {
+                bgClass = 'bg-emerald-900 text-white';
+                icon =
+                    '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+            } else if (type === 'error') {
+                bgClass = 'bg-rose-900 text-white';
+                icon =
+                    '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
+            }
+
+            toast.className =
+                `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-medium ${bgClass} transition-all duration-300 transform translate-y-2 pointer-events-auto`;
+
+            toast.innerHTML =
+                `${icon} <span>${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================================
+        // Karena script sekarang type="module", fungsi yang dipanggil
+        // oleh onclick HTML harus dibuat global.
+        // ============================================================
+        window.handleFormSubmit = handleFormSubmit;
+        window.handleRoleSwitchToggle = handleRoleSwitchToggle;
+        window.closePasswordModal = closePasswordModal;
+        window.verifyGuruPassword = verifyGuruPassword;
+        window.renderTeacherTable = renderTeacherTable;
+        window.openReviewModal = openReviewModal;
+        window.closeReviewModal = closeReviewModal;
+        window.saveReviewData = saveReviewData;
+        window.openDeleteModal = openDeleteModal;
+        window.closeDeleteModal = closeDeleteModal;
+        window.confirmDeleteKti = confirmDeleteKti;
+    </script>
+</body>
+</html>
